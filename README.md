@@ -7,13 +7,18 @@
 * 電話帳として連絡先（電話番号・メールアドレス）の登録と登録した連絡先の確認ができるようにする
 
 ## 機能・要件定義
-* 本関電話帳アプリケーションでは以下の機能を実装する
+* 本電話帳アプリケーションでは以下の機能を実装する
   * 連絡先の登録
   * 連絡先の一覧表示
     * 一覧では検索・ソートができるようにする
   * 連絡先の詳細表示
   * 連絡先の変更（手動で登録できる項目全て）
   * 連絡先の削除
+
+## 技術スタック
+* このプロジェクトでは以下の技術を使用する
+  * バックエンド：Django (Python)
+  * フロントエンド：Next.js (React), JavaScript, HTML, SCSS (Sass), Flutter
 
 ### 登録項目
 * 連絡先に登録する項目は以下のとおり
@@ -71,10 +76,6 @@
 
 * 他は登録と同じ
 
-## 仕様設計
-* 
-
-
 ## DB設計
 ### contacts
 | Column Name | Data Type | Constraints | Notes |
@@ -99,5 +100,5 @@
 | contact_id  | int        | NOT NULL, FOREIGN KEY ON DELETE CASCADE | References contacts(id) |
 | mail        | varchar(255) | NOT NULL, UNIQUE | |
 
-
-
+## api設計
+* api設計についてはswaggerに記載
