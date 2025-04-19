@@ -111,4 +111,10 @@
 | created     | datetime     | NOT NULL    | |
 
 ## api設計
-* api設計についてはswaggerに記載
+### endpoint url
+* 取得系：`/api/controller/`
+* 作成系：`/api/controller/create`
+* 更新系：`/api/controller/id/update`
+* 削除系：`/api/controller/id/delete`
+
+* 各apiのendpointはswaggerに定義する
