@@ -1,0 +1,37 @@
+services:
+  matching-app-platform-backend-api:
+    container_name: matching-app-platform-backend-api
+    build: ./backend-api
+    links:
+      - matching-app-platform-mysql
+    ports:
+      - '62221:80'
+    volumes:  
+      - ./backend-api:/var/www/html
+
+  matching-app-platform-phpmyadmin:
+    container_name: matching-app-platform-phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    platform: linux/amd64
+    links:
+      - matching-app-platform-mysql
+    ports:
+      - 62222:80
+    environment:
+      PMA_ARBITRARY: 1
+      PMA_HOST: matching-app-platform-mysql
+      PMA_USER: root
+      PMA_PASSWORD: password
+
+  matching-app-platform-mysql:
+    container_name: matching-app-platform-mysql
+    image: mysql:8.0.31
+    command: --default-authentication-plugin=mysql_native_password
+    platform: linux/amd64
+    ports:
+      - '61223:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: matching-app-platform
+    volumes:
+      - ./initdb.d:/docker-entrypoint-initdb.d
