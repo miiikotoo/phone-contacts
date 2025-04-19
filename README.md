@@ -17,7 +17,7 @@
 
 ## 技術スタック
 * このプロジェクトでは以下の技術を使用する
-  * バックエンド：Django (Python)
+  * バックエンド：~~Django (Python)~~ CakePHP
   * フロントエンド：Next.js (React), JavaScript, HTML, SCSS (Sass), Flutter
 
 ### 登録項目
@@ -78,6 +78,8 @@
 * 主となるユーザーのデータをcontactsテーブルとする
 * 電話番号とメールアドレスは1対多の関係になるので別テーブルで保存する
 * 電話番号とメールアドレスはユニークにする
+* 電話番号は先頭の0を保持する必要があるのでvarcharにする
+* 電話番号はハイフンなどを含めることを考慮して20文字にする
 
 ### contacts
 | Column Name | Data Type | Constraints | Notes |
@@ -95,7 +97,7 @@
 |-------------|------------|-------------|-------|
 | id          | int        | NOT NULL, PRIMARY KEY | Auto-increment |
 | contact_id  | int        | NOT NULL, FOREIGN KEY ON DELETE CASCADE | References contacts(id) |
-| number      | int        | NOT NULL, UNIQUE | |
+| number      | varcahr(20)  | NOT NULL, UNIQUE | |
 | modified    | datetime     | NOT NULL    | |
 | created     | datetime     | NOT NULL    | |
 
