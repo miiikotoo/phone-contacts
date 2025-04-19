@@ -62,6 +62,10 @@ return function (RouteBuilder $routes): void {
          */
         $builder->connect('/pages/*', 'Pages::display');
 
+        $builder->prefix('api', function (RouteBuilder $apiRoutes): void {
+            $apiRoutes->connect('/contacts', ['controller' => 'Contacts', 'action' => 'index']);
+        });
+
         /*
          * Connect catchall routes for all controllers.
          *
