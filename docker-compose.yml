@@ -1,30 +1,30 @@
 services:
-  matching-app-platform-backend-api:
-    container_name: matching-app-platform-backend-api
+  phone-contacts-backend-api:
+    container_name: phone-contacts-backend-api
     build: ./backend-api
     links:
-      - matching-app-platform-mysql
+      - phone-contacts-mysql
     ports:
       - '62221:80'
     volumes:  
       - ./backend-api:/var/www/html
 
-  matching-app-platform-phpmyadmin:
-    container_name: matching-app-platform-phpmyadmin
+  phone-contacts-phpmyadmin:
+    container_name: phone-contacts-phpmyadmin
     image: phpmyadmin/phpmyadmin
     platform: linux/amd64
     links:
-      - matching-app-platform-mysql
+      - phone-contacts-mysql
     ports:
       - 62222:80
     environment:
       PMA_ARBITRARY: 1
-      PMA_HOST: matching-app-platform-mysql
+      PMA_HOST: phone-contacts-mysql
       PMA_USER: root
       PMA_PASSWORD: password
 
-  matching-app-platform-mysql:
-    container_name: matching-app-platform-mysql
+  phone-contacts-mysql:
+    container_name: phone-contacts-mysql
     image: mysql:8.0.31
     command: --default-authentication-plugin=mysql_native_password
     platform: linux/amd64
@@ -32,6 +32,6 @@ services:
       - '61223:3306'
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: matching-app-platform
+      MYSQL_DATABASE: phone-contacts
     volumes:
       - ./initdb.d:/docker-entrypoint-initdb.d
