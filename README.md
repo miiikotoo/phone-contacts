@@ -27,7 +27,6 @@
   * 電話番号
   * メールアドレス
   * 生年月日（西暦）
-  * 画像（アイコン）
 
 * 氏名・フリガナは文字列であれば英数字など制限はしない
   * ある程度ユーザーに入力の自由度を持たせる
@@ -37,7 +36,6 @@
 * 1つの連絡先に対して電話番号・メールアドレスは複数登録できるようにする
   * 登録可能件数は無制限にする
 
-* アイコン画像はアスペクト比1:1で真四角または丸の表示とする
 
 ## 画面設計
 
@@ -77,6 +75,10 @@
 * 他は登録と同じ
 
 ## DB設計
+* 主となるユーザーのデータをcontactsテーブルとする
+* 電話番号とメールアドレスは1対多の関係になるので別テーブルで保存する
+* 電話番号とメールアドレスはユニークにする
+
 ### contacts
 | Column Name | Data Type | Constraints | Notes |
 |-------------|------------|-------------|-------|
@@ -84,21 +86,27 @@
 | name        | varchar(255) | NOT NULL    | |
 | kana        | varchar(255) | NULL        | |
 | birthday    | date         | NULL        | |
-| icon        | blob         | NULL        | |
+| modified    | datetime     | NOT NULL    | |
+| created     | datetime     | NOT NULL    | |
+
 
 ### phones
 | Column Name | Data Type | Constraints | Notes |
 |-------------|------------|-------------|-------|
 | id          | int        | NOT NULL, PRIMARY KEY | Auto-increment |
 | contact_id  | int        | NOT NULL, FOREIGN KEY ON DELETE CASCADE | References contacts(id) |
-| phone       | varchar(20)  | NOT NULL, UNIQUE | |
+| number      | int        | NOT NULL, UNIQUE | |
+| modified    | datetime     | NOT NULL    | |
+| created     | datetime     | NOT NULL    | |
 
-### emails
+### mails
 | Column Name | Data Type | Constraints | Notes |
 |-------------|------------|-------------|-------|
 | id          | int        | NOT NULL, PRIMARY KEY | Auto-increment |
 | contact_id  | int        | NOT NULL, FOREIGN KEY ON DELETE CASCADE | References contacts(id) |
 | mail        | varchar(255) | NOT NULL, UNIQUE | |
+| modified    | datetime     | NOT NULL    | |
+| created     | datetime     | NOT NULL    | |
 
 ## api設計
 * api設計についてはswaggerに記載
