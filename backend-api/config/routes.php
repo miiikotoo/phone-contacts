@@ -68,7 +68,9 @@ return function (RouteBuilder $routes): void {
             $apiRoutes->connect('/contacts/{id}/update', ['controller' => 'Contacts', 'action' => 'update'])
                 ->setPatterns(['id' => '\d+'])
                 ->setPass(['id']);
-            // $apiRoutes->connect('/contacts/update', ['controller' => 'Contacts', 'action' => 'update']);
+            $apiRoutes->connect('/contacts/{id}/delete', ['controller' => 'Contacts', 'action' => 'delete'])
+                ->setPatterns(['id' => '\d+'])
+                ->setPass(['id']);
         });
 
         /*
