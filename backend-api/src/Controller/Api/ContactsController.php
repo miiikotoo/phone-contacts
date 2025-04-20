@@ -259,4 +259,46 @@ class ContactsController extends AppController
         }
     }
 
+    /**
+     * View method
+     *
+     * @param string|null $id Contact id.
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function view($id = null)
+    {
+        $this->request->allowMethod(['get']);
+
+        // responseの設定
+        $response = $this->response;
+        $response = $response->withType('application/json');
+
+        // IDが指定されていない場合はエラー
+        if (empty($id)) {
+            return $this->response->withStatus(400)->withStringBody(json_encode([
+                'status' => 'error',
+                'message' => 'Contact ID is required'
+            ]));
+        }
+
+        // 連絡先を取得
+        $contact = $this->Contacts->find('all')
+            ->where(['id' => $id])
+            ->contain(['Phones', 'Mails'])
+            ->first();
+        // 連絡先が存在しない場合はエラー
+        if (!$contact) {
+            return $this->response->withStatus(404)->withStringBody(json_encode([
+                'status' => 'error',
+                'message' => 'Contact not found'
+            ]));
+        }
+
+        // レスポンスの生成
+        $response = $response->withStringBody(json_encode($contact));
+
+        // レスポンスを返す
+        return $response;
+    }
+
 }

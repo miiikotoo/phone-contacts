@@ -71,6 +71,9 @@ return function (RouteBuilder $routes): void {
             $apiRoutes->connect('/contacts/{id}/delete', ['controller' => 'Contacts', 'action' => 'delete'])
                 ->setPatterns(['id' => '\d+'])
                 ->setPass(['id']);
+            $apiRoutes->connect('/contacts/{id}', ['controller' => 'Contacts', 'action' => 'view'])
+                ->setPatterns(['id' => '\d+'])
+                ->setPass(['id']);
         });
 
         /*
