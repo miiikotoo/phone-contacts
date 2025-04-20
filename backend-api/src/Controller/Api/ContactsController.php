@@ -116,4 +116,78 @@ class ContactsController extends AppController
         }
     }
 
+    /**
+     * Edit method
+     *
+     * @param string|null $id Contact id.
+     * @return \Cake\Http\Response|null|void Renders view
+     */
+    public function update($id = null)
+    {
+        $this->request->allowMethod(['put']);
+
+        // responseの設定
+        $response = $this->response;
+        $response = $response->withType('application/json');
+
+        // IDが指定されていない場合はエラー
+        if (empty($id)) {
+            return $this->response->withStatus(400)->withStringBody(json_encode([
+                'status' => 'error',
+                'message' => 'Contact ID is required'
+            ]));
+        }
+
+        // 連絡先を取得
+        $contact = $this->Contacts->find('all')->where(['id' => $id])->first();
+        // 連絡先が存在しない場合はエラー
+        if (!$contact) {
+            return $this->response->withStatus(404)->withStringBody(json_encode([
+                'status' => 'error',
+                'message' => 'Contact not found'
+            ]));
+        }
+
+        // todo. postmanでのテストではputの$dataがnullになってしまっていたので要検証
+        $data = $this->request->getData();
+
+        // データベース接続の取得
+        $connection = ConnectionManager::get('default');
+
+        // トランザクションの開始
+        $connection->begin();
+
+        try {
+            // 連絡先を更新
+            $contact = $this->Contacts->patchEntity($contact, $data);
+
+            if ($this->Contacts->save($contact)) {
+                // トランザクションのコミット
+                $connection->commit();
+                // レスポンスの生成
+                $response = $response->withStringBody(json_encode([
+                    'status' => 'success',
+                    'message' => 'Contact updated successfully',
+                    'contact' => $contact,
+                ]));
+            } else {
+                throw new Exception('Failed to save contact');
+            }
+        } catch (Exception $e) {
+            // トランザクションのロールバック
+            $connection->rollback();
+
+            // エラーレスポンスの生成
+            $response = $response->withStatus(400);
+            $response = $response->withStringBody(json_encode([
+                'status' => 'error',
+                'message' => 'Failed to update contact',
+                'errors' => $contact->getErrors()
+            ]));
+        } finally {
+            // レスポンスの返却
+            return $response;
+        }
+    }
+
 }

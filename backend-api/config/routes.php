@@ -65,6 +65,10 @@ return function (RouteBuilder $routes): void {
         $builder->prefix('api', function (RouteBuilder $apiRoutes): void {
             $apiRoutes->connect('/contacts', ['controller' => 'Contacts', 'action' => 'index']);
             $apiRoutes->connect('/contacts/create', ['controller' => 'Contacts', 'action' => 'create']);
+            $apiRoutes->connect('/contacts/{id}/update', ['controller' => 'Contacts', 'action' => 'update'])
+                ->setPatterns(['id' => '\d+'])
+                ->setPass(['id']);
+            // $apiRoutes->connect('/contacts/update', ['controller' => 'Contacts', 'action' => 'update']);
         });
 
         /*
