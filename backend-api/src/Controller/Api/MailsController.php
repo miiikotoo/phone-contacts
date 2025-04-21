@@ -47,4 +47,32 @@ class MailsController extends AppController
         }
     }
 
+    /**
+     * @param int $id
+     * @return \Cake\Http\Response|null
+     */
+    public function update($id)
+    {
+        $this->request->allowMethod(['put']);
+
+        // リクエストデータを確認して、必要な情報があるかチェック
+        $data = $this->request->getData();
+        if (empty($data['mail'])) {
+            return $this->ResponseHelper->jsonResponse(['error' => 'Missing required fields'], 400);
+        }
+
+        $mail = $this->Mails->find()->where(['id' => $id])->first(); // getの場合存在しないと500エラーになるのでfindで取得（エラーハンドリングが目的）
+        // 存在チェック
+        if (!$mail) {
+            return $this->ResponseHelper->jsonResponse(['error' => 'Mail not found'], 404);
+        }
+
+        $mail = $this->Mails->patchEntity($mail, $this->request->getData());
+        if ($this->Mails->save($mail)) {
+            return $this->ResponseHelper->jsonResponse($mail, 200);
+        } else {
+            return $this->ResponseHelper->jsonResponse($mail->getErrors(), 400);
+        }
+    }
+
 }
