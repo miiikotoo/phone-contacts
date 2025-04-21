@@ -80,6 +80,9 @@ return function (RouteBuilder $routes): void {
             $apiRoutes->connect('/phones/{id}/update', ['controller' => 'Phones', 'action' => 'update'])
                 ->setPatterns(['id' => '\d+'])
                 ->setPass(['id']);
+            $apiRoutes->connect('/phones/{id}/delete', ['controller' => 'Phones', 'action' => 'delete'])
+                ->setPatterns(['id' => '\d+'])
+                ->setPass(['id']);
         });
 
         /*

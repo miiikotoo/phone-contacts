@@ -78,4 +78,24 @@ class PhonesController extends AppController
         return $this->ResponseHelper->jsonResponse($phone->getErrors(), 400);
     }
 
+    /**
+     * @param int $id
+     * @return \Cake\Http\Response|null
+     */
+    public function delete($id)
+    {
+        $this->request->allowMethod(['delete']);
+
+        $phone = $this->Phones->get($id);
+        if (!$phone) {
+            return $this->ResponseHelper->jsonResponse(['error' => 'Phone not found'], 404);
+        }
+
+        if ($this->Phones->delete($phone)) {
+            return $this->ResponseHelper->jsonResponse(['message' => 'Phone deleted successfully'], 200);
+        }
+
+        return $this->ResponseHelper->jsonResponse(['error' => 'Failed to delete phone'], 400);
+    }
+
 }
