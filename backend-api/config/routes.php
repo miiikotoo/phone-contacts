@@ -83,6 +83,15 @@ return function (RouteBuilder $routes): void {
             $apiRoutes->connect('/phones/{id}/delete', ['controller' => 'Phones', 'action' => 'delete'])
                 ->setPatterns(['id' => '\d+'])
                 ->setPass(['id']);
+
+            // Mails routes
+            $apiRoutes->connect('/mails/create', ['controller' => 'Mails', 'action' => 'create']);
+            $apiRoutes->connect('/mails/{id}/update', ['controller' => 'Mails', 'action' => 'update'])
+                ->setPatterns(['id' => '\d+'])
+                ->setPass(['id']);
+            $apiRoutes->connect('/mails/{id}/delete', ['controller' => 'Mails', 'action' => 'delete'])
+                ->setPatterns(['id' => '\d+'])
+                ->setPass(['id']);
         });
 
         /*
