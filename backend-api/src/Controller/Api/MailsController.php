@@ -75,4 +75,25 @@ class MailsController extends AppController
         }
     }
 
+    /**
+     * @param int $id
+     * @return \Cake\Http\Response|null
+     */
+    public function delete($id)
+    {
+        $this->request->allowMethod(['delete']);
+
+        $mail = $this->Mails->find()->where(['id' => $id])->first(); // getの場合存在しないと500エラーになるのでfindで取得（エラーハンドリングが目的）
+        // 存在チェック
+        if (!$mail) {
+            return $this->ResponseHelper->jsonResponse(['error' => 'Mail not found'], 404);
+        }
+
+        if ($this->Mails->delete($mail)) {
+            return $this->ResponseHelper->jsonResponse(['message' => 'Mail deleted successfully'], 200);
+        } else {
+            return $this->ResponseHelper->jsonResponse(['error' => 'Failed to delete mail'], 400);
+        }
+    }
+
 }
