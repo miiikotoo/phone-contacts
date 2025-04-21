@@ -22,15 +22,54 @@ class ContactsController extends AppController
      */
     public function index()
     {
-        $contacts = $this->Contacts->find('all', [
-            'order' => ['Contacts.created' => 'DESC'],
-            'contain' => ['Phones', 'Mails'],
-        ]);
-        
+        $this->request->allowMethod(['get']);
+
+        // limitとoffsetの取得
+        $limit = (int)($this->request->getQuery('limit') ?? 10);
+        $offset = (int)($this->request->getQuery('offset') ?? 0);
+        // sort,orderの取得
+        $sort = $this->request->getQuery('sort') ?? 'created';
+        $order = $this->request->getQuery('order') ?? 'desc';
+
+        // todo. 検索条件を適用してデータを取得
+        // name, kana, email, numberの検索条件の取得
+        // $name = $this->request->getQuery('name') ?? null;
+        // $kana = $this->request->getQuery('kana') ?? null;
+        // $email = $this->request->getQuery('email') ?? null;
+        // $number = $this->request->getQuery('number') ?? null;
+        // 検索条件の配列を作成
+        // $conditions = [];
+        // if ($name) {
+        //     $conditions['Contacts.name LIKE'] = '%' . $name . '%';
+        // }
+        // if ($kana) {
+        //     $conditions['Contacts.kana LIKE'] = '%' . $kana . '%';
+        // }
+        // if ($email) {
+        //     $conditions['Mails.email LIKE'] = '%' . $email . '%';
+        // }
+        // if ($number) {
+        //     $conditions['Phones.number LIKE'] = '%' . $number . '%';
+        // }
+
+        $contacts = $this->Contacts->find('all')
+            ->contain(['Phones', 'Mails'])
+            ->order([$sort => $order])
+            ->limit($limit)
+            ->offset($offset)
+            ;
+
+        $contactsCount = $contacts->count();
+
         // レスポンスの生成
         $response = $this->response;
         $response = $response->withType('application/json');
-        $response = $response->withStringBody(json_encode($contacts));
+        $response = $response->withStringBody(json_encode(
+            [
+                'contacts' =>$contacts,
+                'count' => $contactsCount,
+            ]
+        ));
 
         // レスポンスを返す
         return $response;
