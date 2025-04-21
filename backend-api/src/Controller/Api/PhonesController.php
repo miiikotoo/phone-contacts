@@ -48,4 +48,34 @@ class PhonesController extends AppController
         }
     }
 
+    /**
+     * @param int $id
+     * @return \Cake\Http\Response|null
+     */
+    public function update($id)
+    {
+        $this->request->allowMethod(['put']);
+
+        // リクエストデータを確認して、必要な情報があるかチェック
+        $data = $this->request->getData();
+
+        $this->log(print_r($data, true), 'debug');
+
+        if (empty($data['number'])) {
+            return $this->ResponseHelper->jsonResponse(['error' => 'Missing required fields'], 400);
+        }
+
+        $phone = $this->Phones->get($id);
+        if (!$phone) {
+            return $this->ResponseHelper->jsonResponse(['error' => 'Phone not found'], 404);
+        }
+
+        $phone = $this->Phones->patchEntity($phone, $data);
+        if ($this->Phones->save($phone)) {
+            return $this->ResponseHelper->jsonResponse($phone, 200);
+        }
+
+        return $this->ResponseHelper->jsonResponse($phone->getErrors(), 400);
+    }
+
 }

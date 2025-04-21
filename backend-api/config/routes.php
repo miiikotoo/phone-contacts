@@ -77,6 +77,9 @@ return function (RouteBuilder $routes): void {
 
             // Phones routes
             $apiRoutes->connect('/phones/create', ['controller' => 'Phones', 'action' => 'create']);
+            $apiRoutes->connect('/phones/{id}/update', ['controller' => 'Phones', 'action' => 'update'])
+                ->setPatterns(['id' => '\d+'])
+                ->setPass(['id']);
         });
 
         /*
