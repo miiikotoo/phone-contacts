@@ -1,0 +1,51 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Controller\Api;
+
+use App\Controller\AppController;
+use App\Utility\ResponseHelper;
+use Cake\Datasource\ConnectionManager;
+use Exception;
+use App\Controller\Component\ResponseHelperComponent; // Correct namespace for ResponseHelperComponent
+
+/**
+ * Phones Controller
+ *
+ * @property \App\Model\Table\PhonesTable $Phones
+ */
+class PhonesController extends AppController
+{
+    // index, viewはContactsに任せるのでpost, put, deleteだけ実装
+
+    public function initialize(): void
+    {
+        parent::initialize();
+        // $this->loadComponent('RequestHandler');
+        $this->loadComponent('ResponseHelper'); // Correctly loads ResponseHelperComponent
+    }
+
+    /**
+     * @param int $id
+     * @return \Cake\Http\Response|null
+     */
+    public function create()
+    {
+        $this->request->allowMethod(['post']);
+
+        // リクエストデータを確認して、必要な情報があるかチェック
+        $data = $this->request->getData();
+        if (empty($data['contact_id']) || empty($data['number'])) {
+            return $this->ResponseHelper->jsonResponse(['error' => 'Missing required fields'], 400);
+        }
+
+        $phone = $this->Phones->newEmptyEntity();
+        $phone = $this->Phones->patchEntity($phone, $this->request->getData());
+        if ($this->Phones->save($phone)) {
+            return $this->ResponseHelper->jsonResponse($phone, 201);
+        } else {
+            return $this->ResponseHelper->jsonResponse($phone->getErrors(), 400);
+        }
+    }
+
+}
