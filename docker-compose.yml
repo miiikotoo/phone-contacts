@@ -35,3 +35,15 @@ services:
       MYSQL_DATABASE: phone-contacts
     volumes:
       - ./initdb.d:/docker-entrypoint-initdb.d
+
+  phone-contacts:
+    container_name: phone-contacts
+    build: ./frontend
+    platform: linux/amd64
+    tty: true
+    ports:
+      - 61227:3000
+      - 61228:6006
+    volumes:
+      - ./frontend:/var/local
+    working_dir: /var/local
