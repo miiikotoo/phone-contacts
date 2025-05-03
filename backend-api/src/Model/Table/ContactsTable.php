@@ -50,13 +50,9 @@ class ContactsTable extends Table
 
         $this->hasMany('Mails', [
             'foreignKey' => 'contact_id',
-            'dependent' => true,
-            'cascadeCallbacks' => true,
         ]);
         $this->hasMany('Phones', [
             'foreignKey' => 'contact_id',
-            'dependent' => true,
-            'cascadeCallbacks' => true,
         ]);
     }
 
