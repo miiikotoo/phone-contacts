@@ -1,0 +1,63 @@
+'use client'
+import React from 'react'
+// import { useContact } from './_hooks/useContact'
+import Link from 'next/link'
+
+import useSWR from 'swr'
+
+const fetcher = async (url: string) => {
+  const res = await fetch(url, {
+    mode: "cors",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch data");
+  }
+  return res.json();
+}
+const url = "https://jsonplaceholder.typicode.com/users"
+// todo. corsエラーでlocalhost(backend api)での実行ができない
+// const url = "http://localhost:62221/contacts"
+
+export default function Index() {
+
+  const { data, error, isLoading } = useSWR(url, fetcher);
+  
+  return (
+    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
+        <h1 className="text-3xl font-bold">Phone Contact</h1>
+        <Link href="/phone-contact/create" className="text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
+          Create Contact
+        </Link>
+        <p className="text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
+          This is a simple phone contact app.
+        </p>
+        {
+          isLoading ? (
+            <div className="text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
+              Loading...
+            </div>
+          ) : error ? (
+            <div className="text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
+              Error: {error.message}
+            </div>
+          ) : (
+            <div className="text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
+              {data.map((contact: any) => (
+                <div key={contact.id} className="flex flex-col gap-2">
+                  <h2 className="text-lg font-bold">{contact.name}</h2>
+                  <p>{contact.email}</p>
+                  <p>{contact.phone}</p>
+                  <Link href={`/phone-contact/${contact.id}/view`} className="text-blue-500 hover:underline">
+                    View
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )
+        }
+      </main>
+    </div>
+  )
+}
