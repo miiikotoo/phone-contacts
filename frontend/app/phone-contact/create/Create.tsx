@@ -4,32 +4,36 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+import { useCreateContact } from '../_hooks/useContact';
+
 export const Create = () => {
   const router = useRouter();
+
+  const { createContact, data, error, isLoading } = useCreateContact();
 
   // formのsubmitを受け取る
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     
     e.preventDefault();
+
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData.entries());
     console.log(data);
 
-    // バックエンドapiにPOSTリクエストを送信
-    // todo. corsエラーでlocalhost(backend api)での実行ができない
-    const res = await fetch("https://jsonplaceholder.typicode.com/users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    });
+    // useCreateContactを使用してデータを送信
+    await createContact(data);
 
-    if (!res.ok) {
-      throw new Error("Failed to create contact");
+    if (error) {
+      console.error('Error creating contact:', error);
     }
-    // 成功時は`/phone-contact`にリダイレクト
-    router.push("/phone-contact");
+    if (isLoading) {
+      console.log('Creating contact...');
+    }
+    if (data) {
+      console.log('Contact created:', data);
+      // 成功時は`/phone-contact`にリダイレクト
+      router.push("/phone-contact");
+    }
   }
 
   return (

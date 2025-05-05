@@ -1,27 +1,12 @@
 'use client'
 import React from 'react'
-// import { useContact } from './_hooks/useContact'
 import Link from 'next/link'
 
-import useSWR from 'swr'
-
-const fetcher = async (url: string) => {
-  const res = await fetch(url, {
-    mode: "cors",
-    credentials: "include",
-  });
-  if (!res.ok) {
-    throw new Error("Failed to fetch data");
-  }
-  return res.json();
-}
-const url = "https://jsonplaceholder.typicode.com/users"
-// todo. corsエラーでlocalhost(backend api)での実行ができない
-// const url = "http://localhost:62221/contacts"
+import { useGetContacts } from './_hooks/useContact'
 
 export default function Index() {
 
-  const { data, error, isLoading } = useSWR(url, fetcher);
+  const { data, error, isLoading } = useGetContacts();
   
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
