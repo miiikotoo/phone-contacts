@@ -8,50 +8,69 @@ import Link from 'next/link';
 
 import { useSingleContact, useUpdateContact } from '../../_hooks/useContact';
 
-interface ContactData {
-  id: number;
-  name: string;
-  kana: string;
-  number: string[];
-  mail: string[];
-}
+import { Contact, Phone, Mail } from '@/types/phone-contacts';
 
 export const Edit = () => {
   const { id } = useParams();
   const router = useRouter();
+
+  const [userData, setUserData] = useState<Contact | null>(null);
+  const [phones, setPhones] = useState<Phone[]>([]);
+  const [mails, setMails] = useState<Mail[]>([]);
   
-  const { updateContact, error: updateError, isLoading: isUpdating } = useUpdateContact(id as string);
+  const { updateContact} = useUpdateContact(id as string);
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
     const data = Object.fromEntries(formData.entries());
-    console.log(data);
+
+    // フォームデータを整形
+    // phoneとmailのデータを配列に変換
+    const phonesData = phones.map((phone) => ({
+      id: phone.id,
+      number: data[phone.id] || phone.number,
+    }));
+    const mailsData = mails.map((mail) => ({
+      id: mail.id,
+      mail: data[mail.id] || mail.mail,
+    }));
+    // フォームデータを整形
+    const contactData = {
+      name: data.name,
+      kana: data.kana,
+      phones: phonesData,
+      mails: mailsData,
+    };
+    // console.log('contactData:', contactData);
+    // return;
 
     // useUpdateContactを使用してデータを送信
-    await updateContact(data);
-    if (updateError) {
-      console.error('Error updating contact:', updateError);
-    }
-    if (isUpdating) {
-      console.log('Updating contact...');
-    }
-    if (data) {
-      console.log('Contact updated:', data);
-      // 成功時は`/phone-contact`にリダイレクト
-      router.push(`/phone-contact/${id}/view`);
+    const { response } = await updateContact(contactData);
+    if (response) {
+      if (response.status !== 'error') {
+        console.log('Contact updated successfully:', response);
+        router.push(`/phone-contact/${id}/view`);
+      } else {
+        console.error('Error updating contact:', response);
+        console.error('Error message:', response.errors);
+        alert(response.message || 'エラーが発生しました。もう一度お試しください。');
+      }
+    } else {
+      console.error('Error updating contact: No response');
+      alert('更新に失敗しました。もう一度お試しください。');
     }
   };
 
   const { fetchContact, error, isLoading } = useSingleContact(id as string);
-  const [contactData, setContactData] = useState<ContactData | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const data = await fetchContact();
-        setContactData(data);
-      } catch (error) {
-        console.error('Error fetching contact:', error);
+      const data = await fetchContact();
+      setUserData(data);
+
+      if (data) {
+        setPhones(data.phones);
+        setMails(data.mails);
       }
     };
     fetchData();
@@ -65,49 +84,82 @@ export const Edit = () => {
           This is a simple phone contact app.
         </p>
         {
-          isUpdating ? (
-            <div className="text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-              Updating...
-            </div>
-          ) : updateError ? (
-            <div className="text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-              Error: {updateError.message}
-            </div>
-          ) : null
-        }
-        {
-          contactData && (
+          userData && (
             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
               <input
                 type="text"
                 name='name'
                 placeholder="名前"
                 className="border border-gray-300 rounded p-2"
-                defaultValue={contactData.name}
+                defaultValue={userData.name}
               />
               <input
                 type="text"
                 name='kana'
                 placeholder="フリガナ"
                 className="border border-gray-300 rounded p-2"
-                defaultValue={contactData.kana}
+                defaultValue={userData.kana}
               />
-              <input
-                type="tel"
-                name='number'
-                placeholder="電話番号"
-                className="border border-gray-300 rounded p-2"
-                defaultValue={contactData.number}
-              />
-              <button id='add-number' type='button'>+</button>
 
-              <input
-                type="email"
-                name='mail'
-                placeholder="アドレス"
-                className="border border-gray-300 rounded p-2"
-                defaultValue={contactData.mail}
-              />
+              <div id="phone-numbers">
+              {
+                phones.length === 0 ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="tel"
+                      name={`phone`}
+                      placeholder="電話番号"
+                      className="border border-gray-300 rounded p-2"
+                    />
+                    <button id='delete-phone' type='button'>-</button>
+                  </div>
+                ) : (
+                  phones.map((phone: Phone, index: number) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <input
+                        type="tel"
+                        name={phone.id}
+                        placeholder="電話番号"
+                        className="border border-gray-300 rounded p-2"
+                        defaultValue={phone.number}
+                        id={phone.id}
+                      />
+                      <button id='delete-phone' type='button'>-</button>
+                    </div>
+                  ))
+                )
+              }
+              </div>
+              <button id='add-number' type='button'>+</button>
+              <div id="emails">
+              {
+                mails.length === 0 ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="email"
+                      name={`mail`}
+                      placeholder="アドレス"
+                      className="border border-gray-300 rounded p-2"
+                    />
+                    <button id='delete-mail' type='button'>-</button>
+                  </div>
+                ) : (
+                  mails.map((mail: Mail, index: number) => (
+                    <div key={index} className="flex items-center gap-2">
+                      <input
+                        type="email"
+                        name={mail.id}
+                        id={mail.id}
+                        placeholder="アドレス"
+                        className="border border-gray-300 rounded p-2"
+                        defaultValue={mail.mail}
+                      />
+                      <button id='delete-mail' type='button'>-</button>
+                    </div>
+                  ))
+                )
+              }
+              </div>
               <button id='add-mail' type='button'>+</button>
 
               <button type="submit" className="bg-blue-500 text-white rounded p-2">
