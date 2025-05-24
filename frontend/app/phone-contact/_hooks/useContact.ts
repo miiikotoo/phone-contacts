@@ -5,9 +5,7 @@ import useSWR from "swr";
 import { fetcher } from '@/app/_lib/fetcher';
 
 export const useGetContacts = () => {
-  const url = "https://jsonplaceholder.typicode.com/users";
-  // todo. corsエラーでlocalhost(backend api)での実行ができない
-  // const url = "http://localhost:62221/contacts"
+  const url = "http://localhost:61221/api/contacts"
 
   const { data, error, isLoading } = useSWR(url, fetcher);
   return { data, error, isLoading };
@@ -19,16 +17,11 @@ export const useGetContacts = () => {
  * @returns { DataTransfer, error: Error, isLoading: boolean }
  */
 export const useSingleContact = (id: string) => {
-  const url = `https://jsonplaceholder.typicode.com/users/${id}`;
-  // todo. corsエラーでlocalhost(backend api)での実行ができない
-  // const url = `http://localhost:62221/contacts/${id}`
+  const url = `http://localhost:61221/api/contacts/${id}`
 
   const { data, error, isLoading } = useSWR(url, fetcher);
 
   const fetchContact = async () => {
-    if (!data) {
-      throw new Error("No data found");
-    }
     return data;
   }
 
@@ -41,26 +34,18 @@ export const useSingleContact = (id: string) => {
  * @returns { createContact: () => Promise<void>, data: Data, error: Error, isLoading: boolean }
  */
 export const useCreateContact = () => {
-  const url = "https://jsonplaceholder.typicode.com/users";
-  // todo. corsエラーでlocalhost(backend api)での実行ができない
-  // const url = "http://localhost:62221/contacts"
+  const url = "http://localhost:61221/api/contacts/create"
   
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [data, setData] = useState<any>(null);
+  // const [isLoading, setIsLoading] = useState(false);
+  // const [error, setError] = useState<Error | null>(null);
+  // const [data, setData] = useState<any>(null);
 
   const createContact = async (contactData: any) => {
-    setIsLoading(true);
-    try {
-      const response = await fetcher(url, 'POST', contactData);
-      setData(response);
-    } catch (error) {
-      setError(error as Error);
-    } finally {
-      setIsLoading(false);
-    }
+    const response = await fetcher(url, 'POST', contactData);
+      
+    return { response };
   }
-  return { createContact, data, error, isLoading };
+  return { createContact };
 }
 
 /**
@@ -70,26 +55,13 @@ export const useCreateContact = () => {
  * @returns { updateContact: () => Promise<void>, data: Data, error: Error, isLoading: boolean }
  */
 export const useUpdateContact = (id: string) => {
-  const url = `https://jsonplaceholder.typicode.com/users/${id}`;
-  // todo. corsエラーでlocalhost(backend api)での実行ができない
-  // const url = `http://localhost:62221/contacts/${id}`
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [data, setData] = useState<any>(null);
+  const url = `http://localhost:61221/api/contacts/${id}/update`
 
   const updateContact = async (contactData: any) => {
-    setIsLoading(true);
-    try {
-      const response = await fetcher(url, 'PUT', contactData);
-      setData(response);
-    } catch (error) {
-      setError(error as Error);
-    } finally {
-      setIsLoading(false);
-    }
+    const response = await fetcher(url, 'PUT', contactData);
+    return { response };
   }
-  return { updateContact, data, error, isLoading };
+  return { updateContact };
 }
 
 /**
@@ -98,26 +70,11 @@ export const useUpdateContact = (id: string) => {
  * @returns { deleteContact: () => Promise<void>, error: Error, isLoading: boolean }
  */
 export const useDeleteContact = (id: string) => {
-  const url = `https://jsonplaceholder.typicode.com/users/${id}`;
-  // todo. corsエラーでlocalhost(backend api)での実行ができない
-  // const url = `http://localhost:62221/contacts/${id}`
+  const url = `http://localhost:61221/api/contacts/${id}/delete`;
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [data, setData] = useState<any>(null);
   const deleteContact = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetcher(url, 'DELETE');
-      if (!response.ok) {
-        throw new Error("Failed to delete contact");
-      }
-      setData(response);
-    } catch (error) {
-      setError(error as Error);
-    } finally {
-      setIsLoading(false);
-    }
+    const response = await fetcher(url, 'DELETE');
+    return { response };
   }
-  return { deleteContact, data, error, isLoading };
+  return { deleteContact };
 }
