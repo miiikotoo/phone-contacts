@@ -9,7 +9,7 @@ import { useCreateContact } from '../_hooks/useContact';
 export const Create = () => {
   const router = useRouter();
 
-  const { createContact, data, error, isLoading } = useCreateContact();
+  const { createContact } = useCreateContact();
 
   // formのsubmitを受け取る
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -18,21 +18,27 @@ export const Create = () => {
 
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData.entries());
-    console.log(data);
 
     // useCreateContactを使用してデータを送信
-    await createContact(data);
+    const { response  } = await createContact(data);
 
-    if (error) {
-      console.error('Error creating contact:', error);
-    }
-    if (isLoading) {
-      console.log('Creating contact...');
-    }
-    if (data) {
-      console.log('Contact created:', data);
+    if (response) {
+      // const jsonResponse = await response.json();
+      console.log('Response:', response);
+
+      if (response.status === 'error') {
+        console.log('Error creating contact:', response.message);
+
+        // エラーハンドリング
+        // 例: エラーメッセージを表示するなど
+        return;
+      }
+
+      router.push('/phone-contact');
+
       // 成功時は`/phone-contact`にリダイレクト
-      router.push("/phone-contact");
+    } else {
+      console.error('Error creating contact');
     }
   }
 
