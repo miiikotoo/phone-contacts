@@ -24,8 +24,15 @@ export const fetcher = async (
     },
     body: data ? JSON.stringify(data) : null,
   });
+
   if (!res.ok) {
-    throw new Error("Failed to fetch data");
+    throw new Error(`HTTP error! status: ${res.status}`);
   }
-  return res.json();
+
+  // DELETEリクエストの場合、レスポンスが空の可能性がある
+  const contentType = res.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    return res.json();
+  }
+  return null; // 空のレスポンスの場合はnullを返す
 }
