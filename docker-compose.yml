@@ -5,7 +5,7 @@ services:
     links:
       - phone-contacts-mysql
     ports:
-      - '62221:80'
+      - '61221:80'
     volumes:  
       - ./backend-api:/var/www/html
 
@@ -16,7 +16,7 @@ services:
     links:
       - phone-contacts-mysql
     ports:
-      - 62222:80
+      - 61222:80
     environment:
       PMA_ARBITRARY: 1
       PMA_HOST: phone-contacts-mysql

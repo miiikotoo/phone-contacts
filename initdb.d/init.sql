@@ -81,14 +81,16 @@ ALTER TABLE `contacts`
 --
 ALTER TABLE `mails`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `mail` (`mail`);
+  ADD UNIQUE KEY `mail` (`mail`),
+  ADD KEY `fk_mails_contact_id` (`contact_id`);
 
 --
 -- テーブルのインデックス `phones`
 --
 ALTER TABLE `phones`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `number` (`number`);
+  ADD UNIQUE KEY `number` (`number`),
+  ADD KEY `fk_phones_contact_id` (`contact_id`);
 
 --
 -- ダンプしたテーブルの AUTO_INCREMENT
@@ -111,6 +113,16 @@ ALTER TABLE `mails`
 --
 ALTER TABLE `phones`
   MODIFY `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID';
+
+--
+-- 外部キー制約の追加
+--
+ALTER TABLE `mails`
+  ADD CONSTRAINT `fk_mails_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `contacts` (`id`) ON DELETE CASCADE;
+
+ALTER TABLE `phones`
+  ADD CONSTRAINT `fk_phones_contact_id` FOREIGN KEY (`contact_id`) REFERENCES `contacts` (`id`) ON DELETE CASCADE;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
