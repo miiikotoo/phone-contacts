@@ -28,12 +28,10 @@ export default function Index() {
               Error: {error.message}
             </div>
           ) : (
-            <div className="text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-              {data.map((contact: any) => (
+            <div className="flex flex-col gap-6 text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
+              {data.contacts.map((contact: any) => (
                 <div key={contact.id} className="flex flex-col gap-2">
-                  <h2 className="text-lg font-bold">{contact.name}</h2>
-                  <p>{contact.email}</p>
-                  <p>{contact.phone}</p>
+                  <p className="text-lg font-bold">{contact.name}</p>
                   <Link href={`/phone-contact/${contact.id}/view`} className="text-blue-500 hover:underline">
                     View
                   </Link>
