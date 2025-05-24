@@ -22,7 +22,7 @@ class ContactsController extends AppController
      */
     public function index()
     {
-        $this->request->allowMethod(['get']);
+        $this->request->allowMethod(['options', 'get']);
 
         // limitとoffsetの取得
         $limit = (int)($this->request->getQuery('limit') ?? 10);
@@ -82,7 +82,7 @@ class ContactsController extends AppController
      */
     public function create()
     {
-        $this->request->allowMethod(['post']);
+        $this->request->allowMethod(['options', 'post']);
         $data = $this->request->getData();
 
         // responseの設定
@@ -115,13 +115,13 @@ class ContactsController extends AppController
                 }
                 // emailが存在する場合patchentityでrelationのmailsを追加
                 $mail = null;
-                if (isset($data['email'])) {
+                if (isset($data['mail'])) {
                     $mail = $this->Contacts->Mails->newEntity([
-                        'email' => $data['email'],
+                        'mail' => $data['mail'],
                         'contact_id' => $contact->id,
                     ]);
                     if (!$this->Contacts->Mails->save($mail)) {
-                        throw new Exception('Failed to save email');
+                        throw new Exception('Failed to save mail');
                     }
                 }
                 $contact->set('phones', [$phone]);
@@ -163,7 +163,7 @@ class ContactsController extends AppController
      */
     public function update($id = null)
     {
-        $this->request->allowMethod(['put']);
+        $this->request->allowMethod(['options', 'put']);
 
         // responseの設定
         $response = $this->response;
@@ -178,7 +178,11 @@ class ContactsController extends AppController
         }
 
         // 連絡先を取得
-        $contact = $this->Contacts->find('all')->where(['id' => $id])->first();
+        $contact = $this->Contacts->find('all')
+            ->where(['id' => $id])
+            ->contain(['Phones'])
+            ->first();
+
         // 連絡先が存在しない場合はエラー
         if (!$contact) {
             return $this->response->withStatus(404)->withStringBody(json_encode([
@@ -187,8 +191,51 @@ class ContactsController extends AppController
             ]));
         }
 
-        // todo. postmanでのテストではputの$dataがnullになってしまっていたので要検証
         $data = $this->request->getData();
+
+        // データの整形
+        if (isset($data['phones'])) {
+            $phonesData = [];
+            $existingPhoneIds = [];
+
+            // 既存のphone IDを収集
+            foreach ($contact->phones as $phone) {
+                $existingPhoneIds[] = $phone->id;
+            }
+
+            // 送信されたデータの処理
+            foreach ($data['phones'] as $phoneData) {
+                if (isset($phoneData['id'])) {
+                    // 既存のphoneを更新
+                    $phonesData[] = [
+                        'id' => $phoneData['id'],
+                        'number' => $phoneData['number'],
+                        'contact_id' => $contact->id
+                    ];
+                    // 処理済みのIDを配列から削除
+                    $key = array_search($phoneData['id'], $existingPhoneIds);
+                    if ($key !== false) {
+                        unset($existingPhoneIds[$key]);
+                    }
+                } else {
+                    // 新しいphoneを追加
+                    $phonesData[] = [
+                        'number' => $phoneData['number'],
+                        'contact_id' => $contact->id
+                    ];
+                }
+            }
+
+            // 更新リクエストに含まれていない既存のphoneを削除
+            if (!empty($existingPhoneIds)) {
+                $this->Contacts->Phones->deleteAll(['id IN' => $existingPhoneIds]);
+            }
+
+            // 連絡先の更新
+            $contact = $this->Contacts->patchEntity($contact, [
+                'phones' => $phonesData
+            ], ['associated' => ['Phones']]);
+        }
 
         // データベース接続の取得
         $connection = ConnectionManager::get('default');
@@ -198,9 +245,7 @@ class ContactsController extends AppController
 
         try {
             // 連絡先を更新
-            $contact = $this->Contacts->patchEntity($contact, $data);
-
-            if ($this->Contacts->save($contact)) {
+            if ($this->Contacts->save($contact, ['associated' => ['Phones']])) {
                 // トランザクションのコミット
                 $connection->commit();
                 // レスポンスの生成
@@ -237,64 +282,57 @@ class ContactsController extends AppController
      */
     public function delete($id = null)
     {
-        $this->request->allowMethod(['delete']);
+        $this->request->allowMethod(['options', 'delete']);
 
         // responseの設定
         $response = $this->response;
         $response = $response->withType('application/json');
 
-        // IDが指定されていない場合はエラー
-        if (empty($id)) {
-            return $this->response->withStatus(400)->withStringBody(json_encode([
-                'status' => 'error',
-                'message' => 'Contact ID is required'
-            ]));
-        }
+        $contact = $this->Contacts->find('all')
+            ->where(['id' => $id])
+            ->contain(['Phones', 'Mails'])
+            ->first();
 
-        // 連絡先を取得
-        $contact = $this->Contacts->find('all')->where(['id' => $id])->first();
         // 連絡先が存在しない場合はエラー
         if (!$contact) {
-            return $this->response->withStatus(404)->withStringBody(json_encode([
-                'status' => 'error',
-                'message' => 'Contact not found'
-            ]));
+            return $response->withStatus(404)
+                ->withStringBody(json_encode([
+                    'status' => 'error',
+                    'message' => 'Contact not found'
+                ]));
         }
 
         // データベース接続の取得
         $connection = ConnectionManager::get('default');
 
-        // トランザクションの開始
-        $connection->begin();
-
         try {
+            // トランザクションの開始
+            $connection->begin();
+
             // 連絡先を削除
             if ($this->Contacts->delete($contact)) {
                 // トランザクションのコミット
                 $connection->commit();
                 // レスポンスの生成
-                $response = $response->withStringBody(json_encode([
-                    'status' => 'success',
-                    'message' => 'Contact deleted successfully'
-                ]));
+                return $response->withStatus(200)
+                    ->withStringBody(json_encode([
+                        'status' => 'success',
+                        'message' => 'Contact deleted successfully'
+                    ]));
             } else {
-                $this->log('Failed to delete contact: ' . $contact->id, 'error');
                 throw new Exception('Failed to delete contact');
             }
         } catch (Exception $e) {
             // トランザクションのロールバック
             $connection->rollback();
+            $this->log('Failed to delete contact: ' . $contact->id . ', Error: ' . $e->getMessage(), 'error');
 
             // エラーレスポンスの生成
-            $response = $response->withStatus(400);
-            $response = $response->withStringBody(json_encode([
-                'status' => 'error',
-                'message' => 'Failed to delete contact',
-                'errors' => $contact->getErrors()
-            ]));
-        } finally {
-            // レスポンスの返却
-            return $response;
+            return $response->withStatus(400)
+                ->withStringBody(json_encode([
+                    'status' => 'error',
+                    'message' => 'Failed to delete contact'
+                ]));
         }
     }
 
@@ -306,7 +344,7 @@ class ContactsController extends AppController
      */
     public function view($id = null)
     {
-        $this->request->allowMethod(['get']);
+        $this->request->allowMethod(['options', 'get']);
 
         // responseの設定
         $response = $this->response;
