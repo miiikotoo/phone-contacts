@@ -180,7 +180,7 @@ class ContactsController extends AppController
         // 連絡先を取得
         $contact = $this->Contacts->find('all')
             ->where(['id' => $id])
-            ->contain(['Phones'])
+            ->contain(['Phones', 'Mails'])
             ->first();
 
         // 連絡先が存在しない場合はエラー
@@ -231,10 +231,54 @@ class ContactsController extends AppController
                 $this->Contacts->Phones->deleteAll(['id IN' => $existingPhoneIds]);
             }
 
-            // 連絡先の更新
+            // 連絡先の更新（phones）
             $contact = $this->Contacts->patchEntity($contact, [
                 'phones' => $phonesData
             ], ['associated' => ['Phones']]);
+        }
+
+        // メールアドレスの更新処理
+        if (isset($data['mails'])) {
+            $mailsData = [];
+            $existingMailIds = [];
+
+            // 既存のmail IDを収集
+            foreach ($contact->mails as $mail) {
+                $existingMailIds[] = $mail->id;
+            }
+
+            // 送信されたデータの処理
+            foreach ($data['mails'] as $mailData) {
+                if (isset($mailData['id'])) {
+                    // 既存のmailを更新
+                    $mailsData[] = [
+                        'id' => $mailData['id'],
+                        'mail' => $mailData['mail'],
+                        'contact_id' => $contact->id
+                    ];
+                    // 処理済みのIDを配列から削除
+                    $key = array_search($mailData['id'], $existingMailIds);
+                    if ($key !== false) {
+                        unset($existingMailIds[$key]);
+                    }
+                } else {
+                    // 新しいmailを追加
+                    $mailsData[] = [
+                        'mail' => $mailData['mail'],
+                        'contact_id' => $contact->id
+                    ];
+                }
+            }
+
+            // 更新リクエストに含まれていない既存のmailを削除
+            if (!empty($existingMailIds)) {
+                $this->Contacts->Mails->deleteAll(['id IN' => $existingMailIds]);
+            }
+
+            // 連絡先の更新（mails）
+            $contact = $this->Contacts->patchEntity($contact, [
+                'mails' => $mailsData
+            ], ['associated' => ['Mails']]);
         }
 
         // データベース接続の取得
@@ -245,7 +289,7 @@ class ContactsController extends AppController
 
         try {
             // 連絡先を更新
-            if ($this->Contacts->save($contact, ['associated' => ['Phones']])) {
+            if ($this->Contacts->save($contact, ['associated' => ['Phones', 'Mails']])) {
                 // トランザクションのコミット
                 $connection->commit();
                 // レスポンスの生成
