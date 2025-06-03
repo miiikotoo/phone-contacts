@@ -193,6 +193,9 @@ class ContactsController extends AppController
 
         $data = $this->request->getData();
 
+        // 基本情報の更新
+        $contact = $this->Contacts->patchEntity($contact, $data);
+
         // データの整形
         if (isset($data['phones'])) {
             $phonesData = [];
