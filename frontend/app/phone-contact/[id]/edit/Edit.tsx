@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
 import { useSingleContact, useUpdateContact } from '../../_hooks/useContact';
+import { usePhone } from '../../_hooks/usePhone';
 
 import { Contact, Phone, Mail } from '@/types/phone-contacts';
 
@@ -19,6 +20,8 @@ export const Edit = () => {
   const [mails, setMails] = useState<Mail[]>([]);
   
   const { updateContact} = useUpdateContact(id as string);
+  const { createPhoneNumber } = usePhone();
+  
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const formData = new FormData(event.currentTarget);
@@ -76,6 +79,26 @@ export const Edit = () => {
     fetchData();
   }, [fetchContact]);
 
+  const handleAddPhone = async () => {
+    if (!userData) return;
+    
+    const phoneInput = document.getElementById('add-number') as HTMLInputElement;
+    const phoneNumber = phoneInput.value;
+    
+    const result = await createPhoneNumber(Number(id), phoneNumber);
+    if (result.success) {
+      // inputをクリア
+      phoneInput.value = '';
+      // 最新のデータを再取得
+      const data = await fetchContact();
+      if (data) {
+        setPhones(data.phones);
+      }
+    } else {
+      alert('電話番号の追加に失敗しました。');
+    }
+  };
+
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -130,7 +153,22 @@ export const Edit = () => {
                 )
               }
               </div>
-              <button id='add-number' type='button'>+</button>
+              <div>
+                <input 
+                  type="tel" 
+                  name="add-number" 
+                  id="add-number" 
+                  className="border border-gray-300 rounded p-2"
+                />
+                <button 
+                  id='add-number' 
+                  type='button' 
+                  onClick={handleAddPhone}
+                  className="text-blue-500 hover:text-blue-700"
+                >
+                  +
+                </button>
+              </div>
               <div id="emails">
               {
                 mails.length === 0 ? (

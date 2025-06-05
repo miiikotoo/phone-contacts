@@ -31,7 +31,7 @@ class PhonesController extends AppController
      */
     public function create()
     {
-        $this->request->allowMethod(['post']);
+        $this->request->allowMethod(['options', 'post']);
 
         // リクエストデータを確認して、必要な情報があるかチェック
         $data = $this->request->getData();
